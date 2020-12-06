@@ -1,13 +1,13 @@
-import socket
+from http.client import HTTPConnection
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
-PORT = 80  # The port used by the server
+PORT = 8000  # The port used by the server
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST, PORT))
-conversation = ''
-while conversation != 'exit':
-    conversation = input("type smt ")
-    s.sendall(bytes(conversation.encode("utf8")))
-    data = s.recv(1024)
-    print('Received', data.decode("utf8"))
+conn = HTTPConnection(HOST, PORT)
+headers = {'Connection': 'keep alive',
+           # 'Transfer-Encoding': 'chunked',
+           'Content-type': 'text/html'
+           }
+conn.request("GET", "/index.html", headers=headers)
+
+
