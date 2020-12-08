@@ -8,6 +8,7 @@ headers = {'Connection': 'keep alive',
            # 'Transfer-Encoding': 'chunked',
            'Content-type': 'text/html'
            }
-conn.request("GET", "/index.html", headers=headers)
+
+conn.request('GET', '/', headers=headers)
 
 
