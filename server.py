@@ -1,11 +1,9 @@
-import datetime
-import email
 import os
-import shutil
 import urllib
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 import socketserver
+import time
 
 HOST = '127.0.0.1'
 PORT = 8000
@@ -14,20 +12,22 @@ PORT = 8000
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         """Serve a GET request."""
+        self.protocol_version = 'HTTP/1.1'
         f = self.send_head()
         if f:
             try:
-                chunk_size = 200
+                chunk_size = 250
                 while True:
                     buf = f.read(chunk_size)
+                    time.sleep(1) # only for illustrating chunked transferring
                     if not buf:
                         self.wfile.write(b'0\r\n\r\n')
-                        f.close()
                         break
 
                     self.wfile.write(hex(len(buf))[2:].encode('ascii') + b'\r\n' + buf + b'\r\n')
+
             finally:
-                print('chunk sent')
+                f.close()
 
     def send_head(self):
         path = self.translate_path(self.path)
@@ -69,7 +69,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-type", ctype)
             # self.send_header("Content-Length", str(fs[6]))
-            self.send_header("Transfer-encoding", 'chunked')
+            self.send_header("Transfer-Encoding", "chunked")
             self.end_headers()
             return f
         except:
