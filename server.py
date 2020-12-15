@@ -4,6 +4,7 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 import time
+import socket
 
 HOST = '127.0.0.1'
 PORT = 8000
@@ -76,6 +77,36 @@ class Handler(SimpleHTTPRequestHandler):
             f.close()
             raise
 
+# def ReadRequest(Client):
+#     re = ""
+#     Client.settimeout(1)
+#     try:
+#         re = Client.recv(1024).decode()
+#         while (re):
+#             re = re + Client.recv(1024).decode()
+#     except socket.timeout: # fail after 1 second of no activity
+#         if not re:
+#             print("Didn't receive data! [Timeout]")
+#     finally:
+#         return re
+#
+# def ReadHTTPRequest(Server):
+#     re = ""
+#     while (re == ""):
+#         Client, address = Server.accept()
+#         print("Client: ", address," da ket noi toi Server")
+#         re = ReadRequest(Client)
+#     return Client, re
+#
+# def CheckPass(Request):
+#     if "POST / HTTP/1.1" not in Request:
+#         return False
+#     if "Username=admin&Password=admin" in Request:
+#         return True
+#     else:
+#         return False
+        
+      
 
 with socketserver.TCPServer((HOST, PORT), Handler) as server:
     server.serve_forever()
