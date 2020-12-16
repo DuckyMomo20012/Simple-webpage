@@ -4,7 +4,6 @@ from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 import time
-import socket
 
 HOST = '127.0.0.1'
 PORT = 8000
@@ -17,10 +16,10 @@ class Handler(SimpleHTTPRequestHandler):
         f = self.send_head()
         if f:
             try:
-                chunk_size = 250
+                chunk_size = 1000
                 while True:
                     buf = f.read(chunk_size)
-                    time.sleep(1) # only for illustrating chunked transferring
+                    # time.sleep(1) # only for illustrating chunked transferring
                     if not buf:
                         self.wfile.write(b'0\r\n\r\n')
                         break
@@ -63,8 +62,12 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             f = open(path, 'rb')
         except OSError:
-            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
-            return None
+            # self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            self.send_response(HTTPStatus.NOT_FOUND)
+            self.send_header("Transfer-Encoding", "chunked")
+            f = open('404.html', 'rb')
+            self.end_headers()
+            return f
 
         try:
             self.send_response(HTTPStatus.OK)
@@ -105,8 +108,6 @@ class Handler(SimpleHTTPRequestHandler):
 #         return True
 #     else:
 #         return False
-        
-      
 
 with socketserver.TCPServer((HOST, PORT), Handler) as server:
     server.serve_forever()
