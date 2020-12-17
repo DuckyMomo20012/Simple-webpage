@@ -3,7 +3,6 @@ import urllib
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler
 import socketserver
-import time
 
 HOST = '127.0.0.1'
 PORT = 8000
@@ -16,7 +15,7 @@ class Handler(SimpleHTTPRequestHandler):
         f = self.send_head()
         if f:
             try:
-                chunk_size = 1000
+                chunk_size = 1024
                 while True:
                     buf = f.read(chunk_size)
                     # time.sleep(1) # only for illustrating chunked transferring
