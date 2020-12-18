@@ -4,19 +4,26 @@ import socket
 
 class HTTPserver:
     def __init__(self, HOST, PORT):
+        self.HOST = HOST
+        self.PORT = PORT
         self.s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        self.s.bind((HOST, PORT))
-        self.s.listen(1)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.HOST, self.PORT))
+        self.s.listen(5)
         self.request = ""
         self.response = []
 
     def serve_forever(self):
         while True:
             self.conn, self.addr = self.s.accept()
-            self.request = self.conn.recv(1024).decode('utf-8')
-            self.handle()
-            # conn.sendall(b"".join(self.response))
-            self.response = []
+            try:
+                print("Connect to: %s-%d" % (self.HOST, self.PORT))
+                self.request = self.conn.recv(1024).decode('utf-8')
+                self.handle()
+                self.conn.send(b"".join(self.response))
+                self.response = []
+            finally:
+                self.conn.close()
 
     def send_response(self, status_code):
         self.response.append(b"%s %s\r\n" % (b"HTTP/1.1", status_code.encode("utf-8")))
@@ -58,28 +65,27 @@ class HTTPserver:
             self.end_header()
 
         except OSError:
-            # self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            f = open('404.html', 'rb')
             self.send_response('404 NOT FOUND')
             self.send_header("Connection", "keep-alive")
             self.send_header("Content-type", self.guess_type(path))
             self.send_header("Transfer-Encoding", "chunked")
             self.end_header()
-            f = open('404.html', 'rb')
 
         finally:
-            self.conn.sendall(b"".join(self.response))
+            # self.conn.sendall(b"".join(self.response))
             try:
-                chunk_size = 1024
+                chunk_size = 10
                 while True:
                     buf = f.read(chunk_size)
                     # time.sleep(1) # only for illustrating chunked transferring
                     if not buf:
-                        # self.response.append(b'0\r\n\r\n')
-                        self.conn.sendall(b'0\r\n\r\n')
+                        self.response.append(b'0\r\n\r\n')
+                        # self.conn.sendall(b'0\r\n\r\n')
                         break
 
-                    # self.response.append(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
-                    self.conn.sendall(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
+                    self.response.append(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
+                    # self.conn.sendall(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
             finally:
                 f.close()
 
