@@ -66,8 +66,64 @@ class HttpServer:
         if request_line[0] == "POST":
             self.do_POST(path)
 
-        if request_line[0] == "OPTIONS":
-            self.do_OPTION()
+        # if request_line[0] == "OPTIONS":
+        #     self.do_OPTION()
+
+    def do_GET(self, path):
+        f = None
+        filetype = self.guess_type(path)
+        if "&" in path:
+            query = path.split("&")
+            username = query[0].split("=")[1]
+            password = query[1].split("=")[1]
+            print("username:%s - password:%s" % (username, password))
+            if username == "admin" and password == "admin":
+                path = "/info.html"
+            else:
+                path = "/404.html"
+            self.send_response("301 MOVED PERMANENTLY")
+            self.send_header("Location", "%s" % path)
+            return None
+        try:
+            f = open(path, 'rb')
+            self.send_response("200 OK")
+            self.send_header("Connection", "keep-alive")
+            self.send_header("Content-type", filetype)
+
+        except OSError:
+            f = open('404.html', 'rb')
+            self.send_response('404 NOT FOUND')
+            self.send_header("Connection", "keep-alive")
+            self.send_header("Content-type", filetype)
+        finally:
+            # self.send_header("Content-Disposition", 'attachment; filename="{filename}"'.format(filename=path.strip("/")))
+            self.chunk_send(f)
+            # self.send_file(f, filetype)
+
+    def do_POST(self, path):
+        if len(self.request_body) != 0:
+            if "username" and "password" in self.request_body:
+                filetype = self.guess_type(path)
+                username = self.request_body["username"]
+                password = self.request_body["password"]
+                print("username:%s - password:%s" % (username, password))
+                if username == "admin" and password == "admin":
+                    path = "/info.html"
+                else:
+                    path = "/404.html"
+
+                self.send_response("201 CREATED")
+                self.send_header("Location", "%s" % path)
+                self.send_header("Connection", "keep-alive")
+                self.send_header("Content-type", filetype)
+                f = open(path, 'rb')
+                self.send_file(f, filetype)
+
+    # def do_OPTION(self):
+    #     self.send_response("204 NO CONTENT")
+    #     self.send_header("Access-Control-Allow-Origin", self.request_header["Origin"])
+    #     self.send_header("Access-Control-Allow-Methods", "%s, %s, %s" % ("GET", "POST", "OPTIONS"))
+    #     self.send_header("Connection", "keep-alive")
 
     def guess_type(self, path):
         guess, _ = mimetypes.guess_type(path)
@@ -76,13 +132,13 @@ class HttpServer:
         return 'application/octet-stream'
 
     def chunk_send(self, f):
+        print("chunk send")
         self.send_header("Transfer-Encoding", "chunked")
         self.end_header()
         try:
-            chunk_size = 10
+            chunk_size = 1024
             while True:
                 buf = f.read(chunk_size)
-                # time.sleep(1) # only for illustrating chunked transferring
                 if not buf:
                     self.response.append(b'0\r\n\r\n')
                     break
@@ -92,6 +148,7 @@ class HttpServer:
             f.close()
 
     def content_length_send(self, f):
+        print("content-length send")
         response = []
         _WINDOWS = os.name == 'nt'
         COPY_BUFFSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
@@ -109,67 +166,11 @@ class HttpServer:
             f.close()
 
     def send_file(self, f, filetype):
-        if filetype == "text/html" or filetype == "text/css":
-            self.content_length_send(f)
-        else:
-            self.chunk_send(f)
-
-    def do_GET(self, path):
-        f = None
-        filetype = self.guess_type(path)
-        if "&" in path:
-            query = path.split("&")
-            username = query[0].split("=")[1]
-            password = query[1].split("=")[1]
-            print("username:%s - password:%s" % (username, password))
-            url = "%s%s/" % ("http://", self.HOST)
-            if username == "admin" and password == "admin":
-                path = "info.html"
-                self.send_response("301 MOVED PERMANENTLY")
-                self.send_header("Location", "%s%s" % (url, path))
-            else:
-                path = "404.html"
-                self.send_response("301 MOVED PERMANENTLY")
-                self.send_header("Location", "%s%s" % (url, path))
-            return None
-        try:
-            f = open(path, 'rb')
-            self.send_response("200 OK")
-            self.send_header("Connection", "keep-alive")
-            self.send_header("Content-type", filetype)
-
-        except OSError:
-            f = open('404.html', 'rb')
-            self.send_response('404 NOT FOUND')
-            self.send_header("Connection", "keep-alive")
-            self.send_header("Content-type", filetype)
-        finally:
-            self.send_file(f, filetype)
-
-    def do_POST(self, path):
-        if len(self.request_body) != 0:
-            if "username" and "password" in self.request_body:
-                filetype = self.guess_type(path)
-                username = self.request_body["username"]
-                password = self.request_body["password"]
-                print("username:%s - password:%s" % (username, password))
-                if username == "admin" and password == "admin":
-                    path = "info.html"
-                else:
-                    path = "404.html"
-
-                self.send_response("201 CREATED")
-                self.send_header("Location", "%s%s" % ("/", path))
-                self.send_header("Connection", "keep-alive")
-                self.send_header("Content-type", filetype)
-                f = open(path, 'rb')
-                self.send_file(f, filetype)
-
-    def do_OPTION(self):
-        self.send_response("204 NO CONTENT")
-        self.send_header("Access-Control-Allow-Origin", self.request_header["Origin"])
-        self.send_header("Access-Control-Allow-Methods", "%s, %s, %s" % ("GET", "POST", "OPTIONS"))
-        self.send_header("Connection", "keep-alive")
+        # if filetype == "text/html" or filetype == "text/css":
+        #     self.content_length_send(f)
+        # else:
+        #     self.chunk_send(f)
+        pass
 
 
 server = HttpServer("127.0.0.1", 80)
