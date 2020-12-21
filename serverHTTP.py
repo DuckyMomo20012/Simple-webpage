@@ -97,8 +97,7 @@ class HttpServer:
             self.send_header("Content-type", filetype)
         finally:
             # self.send_header("Content-Disposition", 'attachment; filename="{filename}"'.format(filename=path.strip("/")))
-            self.chunk_send(f)
-            # self.send_file(f, filetype)
+            self.send_file(f, filetype)
 
     def do_POST(self, path):
         if len(self.request_body) != 0:
@@ -166,10 +165,10 @@ class HttpServer:
             f.close()
 
     def send_file(self, f, filetype):
-        # if filetype == "text/html" or filetype == "text/css":
-        #     self.content_length_send(f)
-        # else:
-        #     self.chunk_send(f)
+        if filetype == "text/html" or filetype == "text/css":
+            self.content_length_send(f)
+        else:
+            self.chunk_send(f)
         pass
 
 
