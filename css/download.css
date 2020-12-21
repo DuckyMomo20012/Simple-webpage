@@ -1,0 +1,43 @@
+body{
+	margin:0;
+	background: url(../images/white.jpg)no-repeat;
+	background-size: auto;
+	background-position: center;
+}
+
+.Download_title{
+    font-size:16px;
+	text-align: center;
+	margin:15px 0 0;
+	color:#0a0808;
+}
+
+.info{
+    display: flex;
+}
+
+.info .list .ele{
+    flex-basis: 50%;
+	max-width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.info .list .ele img{
+    display: inline;
+    width: 5%;
+    height: 50%;
+	border-radius: 8px;
+}
+
+.info .list a{
+    display: inline-block;
+    height: 48px;
+	width: 48px;
+	color:#111111;
+	margin:0 2px;
+	text-align: center;
+	line-height: 32px;
+	font-size:25px;
+	transition: all .5s ease;
+}
