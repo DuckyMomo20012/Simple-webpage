@@ -1,34 +1,40 @@
 import mimetypes
 import os
 import socket
+from datetime import datetime
 
 
 class HttpServer:
     def __init__(self, host, port):
         self.HOST = host
         self.PORT = port
-        self.s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.s.bind((self.HOST, self.PORT))
-        self.s.listen(5)
         self.request = str()
         self.request_header = dict()
         self.request_body = dict()
         self.response = list()
+        self.status_code = str()
+        self.s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.HOST, self.PORT))
+        self.s.listen(5)
 
     def serve_forever(self):
         while True:
             conn, address = self.s.accept()
             try:
                 self.request = conn.recv(1024).decode('utf-8')
-                print("Connect to: %s-port: %d" % (self.HOST, self.PORT))
+                self.translate_path()
+                today = datetime.today().strftime("%d/%b/%Y")
+                time = datetime.now().strftime("%H:%M:%S")
                 self.handle()
+                print('%s - - [%s % s] "%s" %s -' % (self.HOST, today, time, self.request[0], self.status_code))
                 conn.send(b"".join(self.response))
                 self.response = []
             finally:
                 conn.close()
 
     def send_response(self, status_code):
+        self.status_code = status_code
         self.response.append(b"%s %s\r\n" % (b"HTTP/1.1", status_code.encode("utf-8")))
 
     def send_header(self, keyword, value):
@@ -51,10 +57,8 @@ class HttpServer:
                     pairs = pairs.split("=")
                     self.request_body.update({pairs[0]: pairs[1]})
 
-        return self.request[0]
-
     def handle(self):
-        request_line = self.translate_path().split(" ")
+        request_line = self.request[0].split(" ")
         f = str(request_line[1])
         if f == '/':
             path = 'index.html'
@@ -78,9 +82,9 @@ class HttpServer:
             password = query[1].split("=")[1]
             print("username:%s - password:%s" % (username, password))
             if username == "admin" and password == "admin":
-                path = "/info.html"
+                path = "info.html"
             else:
-                path = "/404.html"
+                path = "404.html"
             self.send_response("301 MOVED PERMANENTLY")
             self.send_header("Location", "%s" % path)
             return None
@@ -96,7 +100,6 @@ class HttpServer:
             self.send_header("Connection", "keep-alive")
             self.send_header("Content-type", filetype)
         finally:
-            # self.send_header("Content-Disposition", 'attachment; filename="{filename}"'.format(filename=path.strip("/")))
             self.send_file(f, filetype)
 
     def do_POST(self, path):
@@ -107,9 +110,9 @@ class HttpServer:
                 password = self.request_body["password"]
                 print("username:%s - password:%s" % (username, password))
                 if username == "admin" and password == "admin":
-                    path = "/info.html"
+                    path = "info.html"
                 else:
-                    path = "/404.html"
+                    path = "404.html"
 
                 self.send_response("201 CREATED")
                 self.send_header("Location", "%s" % path)
@@ -131,7 +134,6 @@ class HttpServer:
         return 'application/octet-stream'
 
     def chunk_send(self, f):
-        print("chunk send")
         self.send_header("Transfer-Encoding", "chunked")
         self.end_header()
         try:
@@ -145,9 +147,9 @@ class HttpServer:
                 self.response.append(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
         finally:
             f.close()
+        print('"%s": %s' % (f.name, "content-length send"))
 
     def content_length_send(self, f):
-        print("content-length send")
         response = []
         _WINDOWS = os.name == 'nt'
         COPY_BUFFSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
@@ -163,6 +165,7 @@ class HttpServer:
             self.response.extend(response)
         finally:
             f.close()
+        print('"%s": %s' % (f.name, "content-length send"))
 
     def send_file(self, f, filetype):
         if filetype == "text/html" or filetype == "text/css":
