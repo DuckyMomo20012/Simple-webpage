@@ -152,10 +152,10 @@ class HttpServer:
     def content_length_send(self, f):
         response = []
         _WINDOWS = os.name == 'nt'
-        COPY_BUFFSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
+        COPY_BUFFERSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
         try:
             while True:
-                buf = f.read(COPY_BUFFSIZE)
+                buf = f.read(COPY_BUFFERSIZE)
                 if not buf:
                     break
 
