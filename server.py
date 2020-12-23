@@ -71,7 +71,7 @@ class HttpServer:
             if request_line[0] == "POST":
                 self.do_POST(path)
         except OSError:
-            print(OSError)
+            print("error")
         # if request_line[0] == "OPTIONS":
         #     self.do_OPTION()
 
