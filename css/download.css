@@ -12,9 +12,7 @@ body{
 	color:#0a0808;
 }
 
-.info{
-    display: flex;
-}
+
 
 .info .list .ele{
     flex-basis: 50%;
@@ -40,4 +38,8 @@ body{
 	line-height: 32px;
 	font-size:25px;
 	transition: all .5s ease;
+}
+
+.info .list{
+	display: flex;
 }
