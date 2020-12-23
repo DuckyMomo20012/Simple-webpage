@@ -59,17 +59,19 @@ class HttpServer:
 
     def handle(self):
         request_line = self.request[0].split(" ")
-        f = str(request_line[1])
-        if f == '/':
-            path = 'index.html'
-        else:
-            path = f[1:]
-        if request_line[0] == "GET":
-            self.do_GET(path)
+        try:
+            f = str(request_line[1])
+            if f == '/':
+                path = 'index.html'
+            else:
+                path = f[1:]
+            if request_line[0] == "GET":
+                self.do_GET(path)
 
-        if request_line[0] == "POST":
-            self.do_POST(path)
-
+            if request_line[0] == "POST":
+                self.do_POST(path)
+        except OSError:
+            print(OSError)
         # if request_line[0] == "OPTIONS":
         #     self.do_OPTION()
 
@@ -147,7 +149,7 @@ class HttpServer:
                 self.response.append(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
         finally:
             f.close()
-        print('"%s": %s' % (f.name, "content-length send"))
+        print('"%s": %s' % (f.name, "chunk send"))
 
     def content_length_send(self, f):
         response = []
