@@ -24,6 +24,8 @@ class HttpServer:
             try:
                 self.request = conn.recv(1024).decode('utf-8')
                 self.translate_path()
+                if self.request_body:
+                    print(self.request_body)
                 today = datetime.today().strftime("%d/%b/%Y")
                 time = datetime.now().strftime("%H:%M:%S")
                 self.handle()
@@ -106,17 +108,17 @@ class HttpServer:
 
     def do_POST(self, path):
         if len(self.request_body) != 0:
-            if "username" and "password" in self.request_body:
+            if "username" and "pass" in self.request_body:
                 filetype = self.guess_type(path)
                 username = self.request_body["username"]
-                password = self.request_body["password"]
+                password = self.request_body["pass"]
                 print("username:%s - password:%s" % (username, password))
                 if username == "admin" and password == "admin":
                     path = "info.html"
                 else:
                     path = "404.html"
 
-                self.send_response("201 CREATED")
+                self.send_response("301 MOVED PERMANENTLY")
                 self.send_header("Location", "%s" % path)
                 self.send_header("Connection", "keep-alive")
                 self.send_header("Content-type", filetype)
