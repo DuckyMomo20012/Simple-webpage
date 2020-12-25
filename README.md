@@ -1,8 +1,10 @@
 # MMT-Project
-Mang may tinh project
+Mang may tinh CLC8 project
+19127631 - Duong Tien Vinh
+19127626 - Le Nguyen Tu Van
 
-1. Run server.py by cmd
+1. Run server.py by cmd or simply double-click server.py
 2. Access 127.0.0.1 on your browser
 3. Sign in with username: admin, password: admin
-4. Click button to switch to view documents
+4. Click button to switch to view list of documents
 5. Click to download the file you want
