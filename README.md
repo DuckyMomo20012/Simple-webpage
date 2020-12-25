@@ -1,7 +1,7 @@
 # MMT-Project
-Mang may tinh CLC8 project
-19127631 - Duong Tien Vinh
-19127626 - Le Nguyen Tu Van
+Mang may tinh CLC8 project\n
+19127631 - Duong Tien Vinh\n
+19127626 - Le Nguyen Tu Van\n
 
 1. Run server.py by cmd or simply double-click server.py
 2. Access 127.0.0.1 on your browser
