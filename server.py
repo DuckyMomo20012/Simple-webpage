@@ -1,5 +1,4 @@
 import mimetypes
-import os
 import socket
 from datetime import datetime
 
@@ -48,13 +47,13 @@ class HttpServer:
     def translate_path(self):
         self.request = self.request.split("\r\n")
         parts: str
-        for parts in self.request[1:]:
+        for parts in self.request[1:]:  # ignore 'Method "GET" or "POST"'
             if "&" not in parts:
                 line = parts.split(" ")
                 if line[0] != "":
-                    self.request_header.update({line[0][:-1]: line[1]})
+                    self.request_header.update({line[0][:-1]: line[1]})  # remove ":"
             else:
-                line = parts.split("&")
+                line = parts.split("&")  # get request body
                 for pairs in line:
                     pairs = pairs.split("=")
                     self.request_body.update({pairs[0]: pairs[1]})
@@ -66,7 +65,7 @@ class HttpServer:
             if f == '/':
                 path = 'index.html'
             else:
-                path = f[1:]
+                path = f[1:]  # ignore first dash
             if request_line[0] == "GET":
                 self.do_GET(path)
 
@@ -155,8 +154,7 @@ class HttpServer:
 
     def content_length_send(self, f):
         response = []
-        _WINDOWS = os.name == 'nt'
-        COPY_BUFFERSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
+        COPY_BUFFERSIZE = 10485760
         try:
             while True:
                 buf = f.read(COPY_BUFFERSIZE)
