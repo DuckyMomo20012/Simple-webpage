@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class HttpServer:
-    def __init__(self, host, port):
+    def __init__(self, port, host = '0.0.0.0'):
         self.HOST = host
         self.PORT = port
         self.request = str()
@@ -150,7 +150,7 @@ class HttpServer:
                 self.response.append(b"%s\r\n%s\r\n" % (hex(len(buf))[2:].encode("ascii"), buf))
         finally:
             f.close()
-        print('"%s": %s' % (f.name, "chunk send"))
+        # print('"%s": %s' % (f.name, "chunk send"))
 
     def content_length_send(self, f):
         response = []
@@ -167,15 +167,20 @@ class HttpServer:
             self.response.extend(response)
         finally:
             f.close()
-        print('"%s": %s' % (f.name, "content-length send"))
+        # print('"%s": %s' % (f.name, "content-length send"))
 
     def send_file(self, f, filetype):
-        if filetype == "text/html" or filetype == "text/css":
-            self.content_length_send(f)
+        try:
+            if filetype == "text/html" or filetype == "text/css":
+                self.content_length_send(f)
+            else:
+                self.chunk_send(f)
+        except:
+            print('There was an error')
         else:
-            self.chunk_send(f)
-        pass
+            print(f"{f.name} sent")
 
 
-server = HttpServer("127.0.0.1", 80)
+# server = HttpServer("127.0.0.1", 80)
+server = HttpServer(port = 80)
 server.serve_forever()
