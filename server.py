@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class HttpServer:
-    def __init__(self, port, host = '0.0.0.0'):
+    def __init__(self, host = '0.0.0.0', port = 8080):
         self.HOST = host
         self.PORT = port
         self.request = str()
@@ -15,6 +15,7 @@ class HttpServer:
         self.s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((self.HOST, self.PORT))
+        print(f'Listening on host: "{self.HOST}", port: "{self.PORT}"')
         self.s.listen(5)
 
     def serve_forever(self):
@@ -28,7 +29,7 @@ class HttpServer:
                 today = datetime.today().strftime("%d/%b/%Y")
                 time = datetime.now().strftime("%H:%M:%S")
                 self.handle()
-                print('%s - - [%s % s] "%s" %s -' % (self.HOST, today, time, self.request[0], self.status_code))
+                print('[%s % s] --  "%s" %s -' % (today, time, self.request[0], self.status_code))
                 conn.send(b"".join(self.response))
                 self.response = []
             finally:
@@ -178,9 +179,10 @@ class HttpServer:
         except:
             print('There was an error')
         else:
-            print(f"{f.name} sent")
+            pass
+            # print(f"{f.name} sent")
 
 
 # server = HttpServer("127.0.0.1", 80)
-server = HttpServer(port = 80)
+server = HttpServer()
 server.serve_forever()
