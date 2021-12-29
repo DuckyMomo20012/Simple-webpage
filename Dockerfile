@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM python:latest
+FROM ubuntu:latest
 WORKDIR .
-COPY . .
+RUN apt-get update && apt-get install -y curl python3 net-tools iputils-ping
+COPY . /app
 # CMD ["python3", "-u", "server.py"]
